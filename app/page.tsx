@@ -10,10 +10,12 @@ import { SourceBadge } from '@/components/ui/SourceBadge';
 import { GksAiAssistant } from '@/components/ai/GksAiAssistant';
 import { KoreanSurvivalMode } from '@/components/korean/KoreanSurvivalMode';
 import { EmergencyWidget } from '@/components/emergency/EmergencyWidget';
+import { DocumentVault } from '@/components/documents/DocumentVault';
+import { StudentMap } from '@/components/map/StudentMap';
 
 export default function Home() {
   const [profile, setProfile] = useState<Partial<UserProfile> | null>(null);
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'ai' | 'korean'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'ai' | 'korean' | 'documents' | 'map'>('dashboard');
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100 p-4 sm:p-6 font-sans">
@@ -34,12 +36,12 @@ export default function Home() {
           <OnboardingFlow onComplete={(data) => setProfile(data)} />
         ) : (
           <div className="space-y-6">
-            {/* User Navigation Bar */}
-            <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-2 rounded-xl overflow-x-auto">
-              <div className="flex gap-2">
+            {/* Navigation Bar */}
+            <div className="flex justify-between items-center bg-slate-900 border border-slate-800 p-2 rounded-xl overflow-x-auto gap-2">
+              <div className="flex gap-1.5 min-w-max">
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition ${
                     activeTab === 'dashboard' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -47,7 +49,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setActiveTab('ai')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition ${
                     activeTab === 'ai' ? 'bg-purple-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
@@ -55,22 +57,39 @@ export default function Home() {
                 </button>
                 <button
                   onClick={() => setActiveTab('korean')}
-                  className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition ${
                     activeTab === 'korean' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
                   Korean Helper
                 </button>
+                <button
+                  onClick={() => setActiveTab('documents')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition ${
+                    activeTab === 'documents' ? 'bg-blue-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Documents
+                </button>
+                <button
+                  onClick={() => setActiveTab('map')}
+                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition ${
+                    activeTab === 'map' ? 'bg-teal-500 text-slate-950' : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  Campus Map
+                </button>
               </div>
 
               <button
                 onClick={() => setProfile(null)}
-                className="text-xs text-slate-400 hover:text-rose-400 transition px-3"
+                className="text-xs text-slate-400 hover:text-rose-400 transition px-3 whitespace-nowrap"
               >
                 Reset
               </button>
             </div>
 
+            {/* View Switching */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
                 <ArcExpirationWidget expirationDate="2026-11-05" />
@@ -85,8 +104,9 @@ export default function Home() {
             )}
 
             {activeTab === 'ai' && <GksAiAssistant userProfile={profile} />}
-
             {activeTab === 'korean' && <KoreanSurvivalMode />}
+            {activeTab === 'documents' && <DocumentVault />}
+            {activeTab === 'map' && <StudentMap />}
           </div>
         )}
       </div>
