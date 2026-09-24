@@ -1,0 +1,100 @@
+-- Enums
+CREATE TYPE user_role AS ENUM ('student', 'mentor', 'admin');
+CREATE TYPE gks_stage AS ENUM ('winner', 'documents', 'visa', 'flight', 'arrival', 'language_program', 'degree_program', 'internship', 'graduation');
+CREATE TYPE verification_badge AS ENUM ('official', 'university', 'student_experience', 'ai_generated');
+
+-- 1. Users & Profiles
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    country_code VARCHAR(3) NOT NULL,
+    gks_year INT NOT NULL,
+    degree_level TEXT NOT NULL,
+    major TEXT NOT NULL,
+    university_id UUID,
+    korean_level VARCHAR(5) DEFAULT 'TOPIK 0',
+    preferred_language VARCHAR(5) DEFAULT 'en',
+    arrival_date DATE,
+    dormitory_name TEXT,
+    stage gks_stage DEFAULT 'winner',
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Universities Hub
+CREATE TABLE universities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name_en TEXT NOT NULL,
+    name_ko TEXT NOT NULL,
+    city TEXT NOT NULL,
+    website_url TEXT,
+    international_office_phone TEXT,
+    international_office_email TEXT,
+    campus_lat DOUBLE PRECISION,
+    campus_lng DOUBLE PRECISION,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Tasks & Checklists
+CREATE TABLE user_tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT,
+    category TEXT NOT NULL, -- e.g., 'Visa', 'Bank', 'Dormitory'
+    due_date DATE,
+    priority VARCHAR(10) DEFAULT 'medium', -- 'low', 'medium', 'high', 'urgent'
+    is_completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMPTZ,
+    source_type verification_badge DEFAULT 'official',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Immigration & ARC Tracker
+CREATE TABLE immigration_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    visa_type VARCHAR(10) NOT NULL, -- e.g., 'D-2-1', 'D-4-1'
+    arc_number_hash TEXT, -- Stored hashed/encrypted
+    arc_issue_date DATE,
+    arc_expiration_date DATE NOT NULL,
+    address_in_korea TEXT,
+    appointment_date TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Financial Management
+CREATE TABLE finance_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    type VARCHAR(10) NOT NULL, -- 'income', 'expense'
+    category TEXT NOT NULL, -- 'stipend', 'rent', 'food', 'transit'
+    amount NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    transaction_date DATE NOT NULL,
+    note TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Document Vault Metadata
+CREATE TABLE documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+    file_name TEXT NOT NULL,
+    file_path TEXT NOT NULL, -- Storage bucket path
+    file_type VARCHAR(50) NOT NULL,
+    category TEXT NOT NULL, -- 'passport', 'admission', 'visa', 'insurance'
+    expiration_date DATE,
+    is_verified BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Row Level Security Rules (Sample)
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can view and edit own profile" ON profiles
+    FOR ALL USING (auth.uid() = id);
+
+ALTER TABLE user_tasks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users can manage own tasks" ON user_tasks
+    FOR ALL USING (auth.uid() = user_id);
