@@ -1,0 +1,22 @@
+{
+  "short_name": "GKS Bridge",
+  "name": "GKS Campus Bridge Korea",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#020617",
+  "theme_color": "#10b981",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Your complete bridge from GKS scholarship winner to life and studies in South Korea."
+}
